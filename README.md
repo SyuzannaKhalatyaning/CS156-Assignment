@@ -17,20 +17,26 @@ Earlier drafts are kept in [`archive/`](archive/).
  
 `social` and `exploration` overlap on purpose (some scenery photos include friends). I wanted to see whether a model could separate them even though I sometimes can't.
  
-## Results (test set, 50 photos)
- 
-| model | test accuracy | test macro-F1 |
-|---|---|---|
-| Majority-class baseline | 0.76 | 0.288 |
-| Color histograms + logistic regression | 0.64 | 0.527 |
-| MobileNetV2 features (frozen) + logistic regression | 1.00 | 1.000 |
-| Small CNN trained from scratch | 0.80 | 0.494 |
+## Results
+
+Test set (50 photos, single split) and grouped 5-fold cross-validation (mean ± sd over 5 session-grouped splits):
+
+| model | test accuracy | test macro-F1 | CV accuracy | CV macro-F1 |
+|---|---|---|---|---|
+| Majority-class baseline | 0.76 | 0.288 | n/a | n/a |
+| Color histograms + logistic regression | 0.64 | 0.527 | 0.68 ± 0.06 | 0.56 ± 0.06 |
+| MobileNetV2 features (frozen) + logistic regression | 1.00 | 1.000 | 0.93 ± 0.05 | 0.89 ± 0.09 |
+| Small CNN trained from scratch | 0.80 | 0.494 | n/a | n/a |
+
+The CV was run only for the two logistic-regression models. The 1.00 on the single test split was optimistic, and the CV scores are the more reliable estimate.
  
 **Main findings**
 - Accuracy alone is misleading: always guessing `exploration` gets 76% but macro-F1 is only 0.288.
 - The CNN never predicted `work_study` (0 of 6 correct on test).
-- MobileNetV2 features scored perfectly, but the test set is only 50 photos and I took about 60 work/study photos on a single day, so I checked for leakage and ran grouped cross-validation (see Section 9b of the notebook).
+- MobileNetV2 features scored 1.00 on the single 50-photo test split, but that was optimistic. Grouped 5-fold CV gives 0.93 ± 0.05 accuracy and 0.89 ± 0.09 macro-F1. There were no near-duplicates between train and test (0 of 50 above 0.90 similarity), but about half of the test photos share a day with training photos, which can inflate scores.
+- Even so, pretrained features (about 0.93) clearly beat color features (about 0.68), so they do separate my classes.
 - The CNN's validation curves reflect a split problem, not classic overfitting: the validation set is 86% `work_study` while training has only 32 such photos.
+  
 ## Pipeline
 
 ```mermaid
